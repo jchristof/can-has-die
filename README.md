@@ -1,6 +1,6 @@
 # can-has-die
 
-Game prototype made while working through the GB tutorials. 
+Game prototype made while working through GB tutorials. 
 
 Made with:
 
