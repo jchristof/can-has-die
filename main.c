@@ -1,10 +1,8 @@
 #include <gb/gb.h>
 #include <stdio.h>
-#include "SmilesSprites.c"
-#include "simple_background.c"
-#include "backgroundTiles.c"
-#include "window_map.c"
 #include "Sprites.c"
+#include "backgroundMap.c"
+#include "BGTiles.c"
 #include <gb/font.h>
 
 typedef struct
@@ -16,28 +14,49 @@ typedef struct
 #define BULLET_COUNT 10
 #define BULLET_DELAY 10
 
+#define HERO_TILE_INDEX 0
+#define INVADER_TILE_INDEX 1
+#define BULLET_TILE_INDEX 2
+#define SPRITE_TILE_COUNT 3
+
 UINT8 collisionCheck(UINT8 x1, UINT8 y1, UINT8 w1, UINT8 h1, UINT8 x2, UINT8 y2, UINT8 w2, UINT8 h2);
-
-void moveEnemy(Position *enemy)
-{
-
-    if (enemy->x >= 160)
-    {
-        enemy->x = 8;
-        enemy->y += 10;
-        return;
-    }
-    enemy->x += 10;
-}
+void moveEnemy(Position *enemy);
+void appLoop();
+void titleLoop();
+void gameLoop();
 
 void main()
+{
+    appLoop();
+}
+
+void appLoop()
+{
+    while (1)
+    {
+        titleLoop();
+
+        gameLoop();
+    }
+}
+
+void titleLoop()
+{
+}
+
+void loadBG()
+{
+    set_bkg_data(0, 2, BGTiles);
+    set_bkg_tiles(0, 0, 20, 18, backgroundMap);
+}
+
+void gameLoop()
 {
     Position shipPosition = {8, 152};
     Position enemy = {8, 16};
     UINT8 i;
     UINT8 y = 0;
     UINT8 bulletDelay = 0;
-
     Position bulletPositions[BULLET_COUNT] = {
         {0, 0},
         {0, 0},
@@ -51,20 +70,25 @@ void main()
         {0, 0},
     };
 
-    set_sprite_data(0, 3, Sprites);
-    set_sprite_tile(0, 0);
-    set_sprite_tile(1, 1);
+    set_sprite_data(0, SPRITE_TILE_COUNT, Sprites);
+    set_sprite_tile(0, HERO_TILE_INDEX);
+    set_sprite_tile(1, INVADER_TILE_INDEX);
+
+    set_bkg_data(0, 2, BGTiles);
+    set_bkg_tiles(0, 0, 20, 18, backgroundMap);
 
     move_sprite(0, shipPosition.x, shipPosition.y);
     move_sprite(1, enemy.x, enemy.y);
 
     for (i = 0; i < BULLET_COUNT; i++)
     {
-        set_sprite_tile(2 + i, 2);
+        set_sprite_tile(2 + i, BULLET_TILE_INDEX);
         move_sprite(2 + i, bulletPositions[i].x, bulletPositions[i].y);
     }
 
     SHOW_SPRITES;
+    SHOW_BKG;
+    DISPLAY_ON;
 
     while (1)
     {
@@ -119,7 +143,7 @@ void main()
         move_sprite(1, enemy.x, enemy.y);
         if (collisionCheck(shipPosition.x, shipPosition.y, 8, 8, enemy.x, enemy.y, 8, 8))
         {
-            while(1){}
+            return;
         }
     }
 }
@@ -127,6 +151,17 @@ void main()
 UINT8 collisionCheck(UINT8 x1, UINT8 y1, UINT8 w1, UINT8 h1, UINT8 x2, UINT8 y2, UINT8 w2, UINT8 h2)
 {
     return ((x1 < (x2 + w2)) && ((x1 + w1) > x2) && (y1 < (h2 + y2)) && ((y1 + h1) > y2)) ? 1 : 0;
+}
+
+void moveEnemy(Position *enemy)
+{
+    if (enemy->x >= 160)
+    {
+        enemy->x = 8;
+        enemy->y += 10;
+        return;
+    }
+    enemy->x += 10;
 }
 
 // void main(){

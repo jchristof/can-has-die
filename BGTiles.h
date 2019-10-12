@@ -1,8 +1,8 @@
 /*
 
- CANNON.C
+ BGTILES.H
 
- Tile Source File.
+ Include File.
 
  Info:
   Form                 : All tiles as one unit.
@@ -10,7 +10,7 @@
   Compression          : None.
   Counter              : None.
   Tile size            : 8 x 8
-  Tiles                : 0 to 0
+  Tiles                : 0 to 3
 
   Palette colors       : None.
   SGB Palette          : None.
@@ -22,11 +22,10 @@
 
 */
 
-/* Start of tile array. */
-unsigned char Cannon[] =
-{
-  0x18,0x18,0x18,0x18,0x7E,0x7E,0xFF,0xDB,
-  0x7E,0x5A,0xFF,0xDB,0xFF,0xFF,0x66,0x66
-};
 
-/* End of CANNON.C */
+/* Bank of tiles. */
+#define BGTilesBank 0
+/* Start of tile array. */
+extern unsigned char BGTiles[];
+
+/* End of BGTILES.H */
