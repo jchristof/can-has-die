@@ -12,12 +12,14 @@ typedef struct
 } Position;
 
 #define BULLET_COUNT 10
-#define BULLET_DELAY 10
+#define BULLET_DELAY 20
 
 #define HERO_TILE_INDEX 0
 #define INVADER_TILE_INDEX 1
 #define BULLET_TILE_INDEX 2
 #define SPRITE_TILE_COUNT 3
+#define HOP_DEPLAY  2
+#define ENEMY_MOVE_DELAY 0
 
 UINT8 collisionCheck(UINT8 x1, UINT8 y1, UINT8 w1, UINT8 h1, UINT8 x2, UINT8 y2, UINT8 w2, UINT8 h2);
 void moveEnemy(Position *enemy);
@@ -50,6 +52,13 @@ void loadBG()
     set_bkg_tiles(0, 0, 20, 18, backgroundMap);
 }
 
+void wait_vbl(UINT8 count){
+    UINT8 i;
+    for(i = 0; i < count; i++){
+        wait_vbl_done();
+    }
+}
+
 void gameLoop()
 {
     Position shipPosition = {8, 152};
@@ -69,6 +78,11 @@ void gameLoop()
         {0, 0},
         {0, 0},
     };
+
+    UINT8 hopArc[9] = {0, 4, 8, 9, 10, 4, 2, 1, 0};
+    UINT8 hopIndex = 0;
+    UINT8 hopDelay = HOP_DEPLAY;
+    UINT8 enemyMoveDelay = ENEMY_MOVE_DELAY;
 
     set_sprite_data(0, SPRITE_TILE_COUNT, Sprites);
     set_sprite_tile(0, HERO_TILE_INDEX);
@@ -119,14 +133,30 @@ void gameLoop()
             }
         }
 
-        move_sprite(0, shipPosition.x, shipPosition.y);
+        if(joypad_state & J_B && hopIndex == 0){
+            hopIndex = 1;
+        }
+
+        if(hopIndex != 0){
+            if(hopDelay == 0){
+                hopIndex++;
+               hopDelay = HOP_DEPLAY;
+            }
+            else
+                hopDelay--;
+        }
+        
+        if(hopIndex == 10)
+            hopIndex = 0;
+
+        move_sprite(0, shipPosition.x, shipPosition.y - (hopArc[hopIndex] << 2));
 
         for (i = 0; i < BULLET_COUNT; i++)
         {
             move_sprite(2 + i, bulletPositions[i].x, bulletPositions[i].y);
             y = bulletPositions[i].y;
             if (y != 0)
-                bulletPositions[i].y = (y < 5) ? 0 : y - 5;
+                bulletPositions[i].y = (y < 1) ? 0 : y - 1;
 
             if (collisionCheck(bulletPositions[i].x, bulletPositions[i].y, 8, 8, enemy.x, enemy.y, 8, 8))
             {
@@ -137,14 +167,22 @@ void gameLoop()
             }
         }
 
-        delay(10);
         bulletDelay = bulletDelay ? bulletDelay - 1 : 0;
-        moveEnemy(&enemy);
-        move_sprite(1, enemy.x, enemy.y);
+
+        if(enemyMoveDelay == 0){
+            enemyMoveDelay = ENEMY_MOVE_DELAY;
+            moveEnemy(&enemy);
+            move_sprite(1, enemy.x, enemy.y);
+        }
+        else
+            enemyMoveDelay--;
+            
         if (collisionCheck(shipPosition.x, shipPosition.y, 8, 8, enemy.x, enemy.y, 8, 8))
         {
             return;
         }
+
+        wait_vbl_done();
     }
 }
 
@@ -155,13 +193,13 @@ UINT8 collisionCheck(UINT8 x1, UINT8 y1, UINT8 w1, UINT8 h1, UINT8 x2, UINT8 y2,
 
 void moveEnemy(Position *enemy)
 {
-    if (enemy->x >= 160)
+    if (enemy->x >= 168)
     {
-        enemy->x = 8;
+        enemy->x = 0;
         enemy->y += 10;
         return;
     }
-    enemy->x += 10;
+    enemy->x += 1;
 }
 
 // void main(){
