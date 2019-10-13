@@ -67,7 +67,6 @@ void gameLoop()
     Position enemy = {8, 16};
     UINT8 i;
     UINT8 y = 0;
-    UINT8 bulletDelay = 0;
     Position bulletPositions[BULLET_COUNT] = {
         {0, 0},
         {0, 0},
@@ -81,9 +80,6 @@ void gameLoop()
         {0, 0},
     };
 
-    UINT8 hopArc[9] = {0, 4, 8, 9, 10, 4, 2, 1, 0};
-    UINT8 hopIndex = 0;
-    UINT8 hopDelay = HOP_DEPLAY;
     UINT8 enemyMoveDelay = ENEMY_MOVE_DELAY;
     BYTE jumping = 0;
     UINT8 jumpSpeed = 0;
@@ -123,7 +119,7 @@ void gameLoop()
             shipPosition.x = shipPosition.x > 160 ? 160 : shipPosition.x;
         }
 
-        if (joypad_state & J_A && bulletDelay == 0)
+        if (joypad_state & J_A)
         {
             for (i = 0; i < BULLET_COUNT; i++)
             {
@@ -131,7 +127,6 @@ void gameLoop()
                 {
                     bulletPositions[i].y = shipPosition.y - 4;
                     bulletPositions[i].x = shipPosition.x;
-                    bulletDelay = BULLET_DELAY;
                     break;
                 }
             }
@@ -153,14 +148,14 @@ void gameLoop()
                 jumpSpeed -= GRAVITY;
         }
 
-        move_sprite(0, shipPosition.x, shipPosition.y - (hopArc[hopIndex] << 2));
+        move_sprite(0, shipPosition.x, shipPosition.y);
 
-        for (i = 0; i < BULLET_COUNT; i++)
+        for (i = 0; i < 1; i++)
         {
             move_sprite(2 + i, bulletPositions[i].x, bulletPositions[i].y);
             y = bulletPositions[i].y;
             if (y != 0)
-                bulletPositions[i].y = (y < 1) ? 0 : y - 1;
+                bulletPositions[i].y = (y < 1) ? 0 : y - 4;
 
             if (collisionCheck(bulletPositions[i].x, bulletPositions[i].y, 8, 8, enemy.x, enemy.y, 8, 8))
             {
@@ -170,8 +165,6 @@ void gameLoop()
                 bulletPositions[i].y = 0;
             }
         }
-
-        bulletDelay = bulletDelay ? bulletDelay - 1 : 0;
 
         if(enemyMoveDelay == 0){
             enemyMoveDelay = ENEMY_MOVE_DELAY;
