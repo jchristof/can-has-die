@@ -20,6 +20,8 @@ typedef struct
 #define SPRITE_TILE_COUNT 3
 #define HOP_DEPLAY  2
 #define ENEMY_MOVE_DELAY 0
+#define JUMP_SPEED 10
+#define GRAVITY 1
 
 UINT8 collisionCheck(UINT8 x1, UINT8 y1, UINT8 w1, UINT8 h1, UINT8 x2, UINT8 y2, UINT8 w2, UINT8 h2);
 void moveEnemy(Position *enemy);
@@ -83,6 +85,8 @@ void gameLoop()
     UINT8 hopIndex = 0;
     UINT8 hopDelay = HOP_DEPLAY;
     UINT8 enemyMoveDelay = ENEMY_MOVE_DELAY;
+    BYTE jumping = 0;
+    UINT8 jumpSpeed = 0;
 
     set_sprite_data(0, SPRITE_TILE_COUNT, Sprites);
     set_sprite_tile(0, HERO_TILE_INDEX);
@@ -125,7 +129,7 @@ void gameLoop()
             {
                 if (bulletPositions[i].y == 0)
                 {
-                    bulletPositions[i].y = 152;
+                    bulletPositions[i].y = shipPosition.y - 4;
                     bulletPositions[i].x = shipPosition.x;
                     bulletDelay = BULLET_DELAY;
                     break;
@@ -133,21 +137,21 @@ void gameLoop()
             }
         }
 
-        if(joypad_state & J_B && hopIndex == 0){
-            hopIndex = 1;
+        if(joypad_state & J_B && jumping == 0){
+            jumping = 1;
+            jumpSpeed = JUMP_SPEED;
         }
 
-        if(hopIndex != 0){
-            if(hopDelay == 0){
-                hopIndex++;
-               hopDelay = HOP_DEPLAY;
+        if(jumping == 1){
+            shipPosition.y = shipPosition.y - jumpSpeed;
+            if(shipPosition.y > 152){
+                shipPosition.y = 152;
+                jumpSpeed = 0;
+                jumping = 0;
             }
             else
-                hopDelay--;
+                jumpSpeed -= GRAVITY;
         }
-        
-        if(hopIndex == 10)
-            hopIndex = 0;
 
         move_sprite(0, shipPosition.x, shipPosition.y - (hopArc[hopIndex] << 2));
 
@@ -199,7 +203,7 @@ void moveEnemy(Position *enemy)
         enemy->y += 10;
         return;
     }
-    enemy->x += 1;
+    enemy->x += 5;
 }
 
 // void main(){
